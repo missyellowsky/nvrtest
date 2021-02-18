@@ -4,6 +4,16 @@
       <el-tree :data="cameras" :props="defaultProps" ref="tree" :check-strictly="true" show-checkbox  @check="checkGroupNode" node-key="ip" check-on-click-node></el-tree>
     </div>
     <div style="width: 15%;margin-right: 1rem">
+      <div class="block">
+        <span class="demonstration">默认</span>
+        <el-date-picker
+          v-model="date"
+          type="date"
+          @change="dateChange"
+          placeholder="选择日期">
+        </el-date-picker>
+      </div>
+      <br/>
       <el-tree :data="videoFiles" :props="defaultProps" ref="video" node-key="id" @node-click="playRecord"></el-tree>
     </div>
     <div style="display: flex;flex-wrap: wrap;">
@@ -17,12 +27,12 @@
 </template>
 
 <script>
- import Player from 'xgplayer';
- import FlvPlayer from 'xgplayer-flv';
- import FlvPlayerJS from 'xgplayer-flv.js';
- import HlsPlayer from 'xgplayer-hls.js';
- import http from '../request/http'
- import api from '../request/api'
+  import Player from 'xgplayer';
+  import FlvPlayer from 'xgplayer-flv';
+  import FlvPlayerJS from 'xgplayer-flv.js';
+  import HlsPlayer from 'xgplayer-hls.js';
+  import http from '../request/http'
+  import api from '../request/api'
   export default {
     name: 'LivePlayerRecord',
     data(){
@@ -38,13 +48,15 @@
           isLeaf:"isLeaf"
         },
         player:null,
-        fileLenth:3600
+        fileLenth:3600,
+        date: Date.now(),
+        ip:""
       }
     },
     components: {
     },
     props: {
-        msg: String
+      msg: String
     },
     methods: {
 
@@ -80,11 +92,11 @@
             for (let key in data){
               let leafs = [];
               for (let file in data[key]){
-               let leaf = {
-                 label:data[key][file],
-                 isLeaf:true,
-                 id:data[key][file]
-               }
+                let leaf = {
+                  label:data[key][file],
+                  isLeaf:true,
+                  id:data[key][file]
+                }
                 leafs.push(leaf);
               }
               filesTree.push({
@@ -106,7 +118,14 @@
         if(!a.isLeaf){
           return
         }
-        this.initVideoFiles(a.ip,"1612429202")
+        this.ip = a.ip;
+        let time = this.date.toString().substring(0,10);
+        this.initVideoFiles(a.ip,time)
+      },
+      dateChange: function(){
+        let time = Number(this.date).toString().substring(0,10);
+        console.log(time)
+        this.initVideoFiles(this.ip,time)
       },
       playRecord:function (a, b,c) {
         debugger
@@ -187,11 +206,11 @@
       },
       //销毁播放器并停止已开始的拉流请求
       destroy: function () {
-          if(this.player){
-            this.player.pause();
-            this.player.destroy(true);
-            this.player = null;
-          }
+        if(this.player){
+          this.player.pause();
+          this.player.destroy(true);
+          this.player = null;
+        }
       },
     },
     mounted () {
@@ -200,18 +219,18 @@
     destroyed () {
       this.destroy();
     }
-}
+  }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 
 <style lang="less" scoped>
   /deep/ .el-tree-node{
-  .is-leaf + .el-checkbox .el-checkbox__inner{
-    display: inline-block;
-  }
-  .el-checkbox .el-checkbox__inner{
-    display: none;
-  }
+    .is-leaf + .el-checkbox .el-checkbox__inner{
+      display: inline-block;
+    }
+    .el-checkbox .el-checkbox__inner{
+      display: none;
+    }
   }
 </style>
